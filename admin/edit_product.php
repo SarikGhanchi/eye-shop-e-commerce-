@@ -10,14 +10,14 @@ include '../includes/db.php';
 
 $success = $error = "";
 
-// Validate product ID
+// Check if ID is set
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die("❌ Invalid product ID.");
 }
 
 $product_id = intval($_GET['id']);
 
-// Fetch product
+// Get product info
 $product_result = mysqli_query($conn, "SELECT * FROM products WHERE id = $product_id");
 $product = mysqli_fetch_assoc($product_result);
 
@@ -25,13 +25,16 @@ if (!$product) {
     die("❌ Product not found.");
 }
 
-// Handle form submission
+// Fetch categories for dropdown
+$category_result = mysqli_query($conn, "SELECT id, name FROM categories");
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name        = mysqli_real_escape_string($conn, $_POST['name']);
     $description = mysqli_real_escape_string($conn, $_POST['description']);
     $price       = floatval($_POST['price']);
+    $category_id = intval($_POST['category_id']);
 
-    // Image upload logic (optional)
+    // Check if new image uploaded
     if (!empty($_FILES['image']['name'])) {
         $image_name = $_FILES['image']['name'];
         $image_tmp  = $_FILES['image']['tmp_name'];
@@ -40,22 +43,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($image_tmp, $image_path)) {
             $image_sql = ", image = '$image_name'";
         } else {
-            $error = "❌ Failed to upload image.";
+            $error = "❌ Failed to upload new image.";
         }
     } else {
-        $image_sql = ""; // No change to image
+        $image_sql = ""; // no update to image
     }
 
     if (!$error) {
         $sql = "UPDATE products SET 
                 name = '$name', 
                 description = '$description', 
-                price = '$price'
+                price = '$price',
+                category_id = '$category_id'
                 $image_sql
                 WHERE id = $product_id";
 
         if (mysqli_query($conn, $sql)) {
             $success = "✅ Product updated successfully!";
+            // Refresh product info
             $product_result = mysqli_query($conn, "SELECT * FROM products WHERE id = $product_id");
             $product = mysqli_fetch_assoc($product_result);
         } else {
@@ -98,6 +103,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
             <label class="form-label">Price (Rs)</label>
             <input type="number" step="0.01" name="price" class="form-control" value="<?php echo $product['price']; ?>" required>
+        </div>
+
+        <!-- ✅ Category Dropdown -->
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category_id" class="form-select" required>
+                <option value="">-- Select Category --</option>
+                <?php while ($cat = mysqli_fetch_assoc($category_result)) { ?>
+                    <option value="<?php echo $cat['id']; ?>" 
+                        <?php if ($product['category_id'] == $cat['id']) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($cat['name']); ?>
+                    </option>
+                <?php } ?>
+            </select>
         </div>
 
         <div class="mb-3">

@@ -17,10 +17,18 @@ if (empty($cart)) {
     exit();
 }
 
-// Calculate total
+// ✅ Calculate total using DB
 $total = 0;
-foreach ($cart as $item) {
-    $total += $item['price'] * $item['quantity'];
+$cart_products = [];
+
+foreach ($cart as $product_id => $qty) {
+    $res = mysqli_query($conn, "SELECT * FROM products WHERE id = $product_id");
+    if ($product = mysqli_fetch_assoc($res)) {
+        $product['quantity'] = $qty;
+        $product['subtotal'] = $product['price'] * $qty;
+        $total += $product['subtotal'];
+        $cart_products[] = $product;
+    }
 }
 
 // Handle order submission
@@ -31,11 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (mysqli_query($conn, $insert_order)) {
         $order_id = mysqli_insert_id($conn);
 
-        foreach ($cart as $product_id => $item) {
+        foreach ($cart_products as $item) {
+            $pid = $item['id'];
             $quantity = $item['quantity'];
             $price = $item['price'];
             $insert_item = "INSERT INTO order_items (order_id, product_id, quantity, price) 
-                            VALUES ('$order_id', '$product_id', '$quantity', '$price')";
+                            VALUES ('$order_id', '$pid', '$quantity', '$price')";
             mysqli_query($conn, $insert_item);
         }
 
@@ -59,12 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <th>Qty</th>
         <th>Total</th>
     </tr>
-    <?php foreach ($cart as $item): ?>
+    <?php foreach ($cart_products as $item): ?>
     <tr>
         <td><?php echo htmlspecialchars($item['name']); ?></td>
         <td>Rs. <?php echo $item['price']; ?></td>
         <td><?php echo $item['quantity']; ?></td>
-        <td>Rs. <?php echo $item['price'] * $item['quantity']; ?></td>
+        <td>Rs. <?php echo $item['subtotal']; ?></td>
     </tr>
     <?php endforeach; ?>
     <tr>

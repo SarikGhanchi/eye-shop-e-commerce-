@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name        = mysqli_real_escape_string($conn, $_POST['name']);
     $description = mysqli_real_escape_string($conn, $_POST['description']);
     $price       = floatval($_POST['price']);
-    // $category_id = intval($_POST['category_id']);
+    $category_id = intval($_POST['category_id']);  // ✅ category field
 
     // Handle image upload
     $image_name = $_FILES['image']['name'];
@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image_path = "../assets/uploads/" . basename($image_name);
 
     if (move_uploaded_file($image_tmp, $image_path)) {
-        $sql = "INSERT INTO products (name, description, price, image)
-                VALUES ('$name', '$description', '$price', '$image_name')";
+        $sql = "INSERT INTO products (name, description, price, image, category_id)
+                VALUES ('$name', '$description', '$price', '$image_name', '$category_id')";
 
         if (mysqli_query($conn, $sql)) {
             $success = "✅ Product added successfully!";
@@ -73,13 +73,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="number" step="0.01" name="price" class="form-control" required>
         </div>
 
-        <!-- <div class="mb-3"> -->
-            <!-- <label class="form-label">Category</label> -->
-            <!-- <select name="category_id" class="form-select" required> -->
-                <!-- <option value="">-- Select Category --</option> -->
-                
-            <!-- </select> -->
-        <!-- </div> -->
+        <!-- ✅ Category Dropdown -->
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category_id" class="form-select" required>
+                <option value="">-- Select Category --</option>
+                <?php while ($cat = mysqli_fetch_assoc($category_result)) { ?>
+                    <option value="<?php echo $cat['id']; ?>">
+                        <?php echo htmlspecialchars($cat['name']); ?>
+                    </option>
+                <?php } ?>
+            </select>
+        </div>
 
         <div class="mb-3">
             <label class="form-label">Upload Image</label>

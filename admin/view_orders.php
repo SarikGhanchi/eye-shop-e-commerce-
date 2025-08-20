@@ -1,61 +1,86 @@
-
 <?php
-session_start();
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
+// Include database connection
+include '../includes/db.php'; // adjust path if needed
+
+// Fetch orders with user info
+$sql = "SELECT o.id, u.name AS customer_name, o.total_amount, o.order_date, o.status 
+FROM orders o
+JOIN users u ON o.user_id = u.id
+ORDER BY o.id DESC";
+$result = mysqli_query($conn, $sql);
 ?>
 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.pending {
+            color: orange;
+        }
+        .status.completed {
+            color: green;
+        }
+        .status.cancelled {
+            color: red;
+        }
+    </style>
+</head>
+<body>
 
-<?php
-include '../includes/db.php';
-include '../includes/auth.php'; // admin session check
-include '../includes/header.php';
+<h1>Order List</h1>
 
-$orders = mysqli_query($conn, "
-    SELECT o.*, u.name AS user_name, u.email
-    FROM orders o
-    JOIN users u ON o.user_id = u.id
-    ORDER BY o.created_at DESC
-");
-?>
-
-<h2>🧾 All Orders</h2>
-
-<?php if (mysqli_num_rows($orders) == 0): ?>
-    <p>No orders placed yet.</p>
+<?php if (mysqli_num_rows($result) > 0): ?>
+    <table>
+        <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        <?php while($row = mysqli_fetch_assoc($result)): ?>
+               <tr>
+            <td><?= htmlspecialchars($row['id']) ?></td>
+            <td><?= htmlspecialchars($row['customer_name']) ?></td>
+            <td>₹<?= htmlspecialchars($row['total_amount']) ?></td>
+            <td><?= htmlspecialchars($row['order_date']) ?></td>
+            <td class="status <?= strtolower($row['status']) ?>"><?= htmlspecialchars($row['status']) ?></td>
+            <td><a href="order_details.php?id=<?= $row['id'] ?>">View</a></td>
+        </tr>
+        <?php endwhile; ?>
+    </table>
 <?php else: ?>
-    <?php while ($order = mysqli_fetch_assoc($orders)): ?>
-        <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
-            <h3>Order ID: <?php echo $order['id']; ?></h3>
-            <p><strong>User:</strong> <?php echo $order['user_name']; ?> (<?php echo $order['email']; ?>)</p>
-            <p><strong>Total:</strong> Rs. <?php echo $order['total']; ?></p>
-            <p><strong>Placed on:</strong> <?php echo $order['created_at']; ?></p>
-
-            <h4>Items:</h4>
-            <ul>
-                <?php
-                $order_id = $order['id'];
-                $items = mysqli_query($conn, "
-                    SELECT oi.*, p.name
-                    FROM order_items oi
-                    JOIN products p ON oi.product_id = p.id
-                    WHERE oi.order_id = $order_id
-                ");
-                while ($item = mysqli_fetch_assoc($items)):
-                ?>
-                    <li>
-                        <?php echo $item['name']; ?> –
-                        Qty: <?php echo $item['quantity']; ?> –
-                        Price: Rs. <?php echo $item['price']; ?>
-                    </li>
-                <?php endwhile; ?>
-            </ul>
-        </div>
-    <?php endwhile; ?>
+    <p>No orders found.</p>
 <?php endif; ?>
 
-<a href="dashboard.php">← Back to Dashboard</a>
+<?php mysqli_close($conn); ?>
 
-<?php include '../includes/footer.php'; ?>
+</body>
+</html>
