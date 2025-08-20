@@ -1,34 +1,35 @@
 <?php
 session_start();
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
+
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+    header("Location: ../login.php");
     exit();
 }
-?>
 
-<?php
 include '../includes/db.php';
-include '../includes/auth.php'; // make sure only admin can access
 
 $success = $error = "";
+
+// Fetch categories for dropdown
+$category_result = mysqli_query($conn, "SELECT id, name FROM categories");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name        = mysqli_real_escape_string($conn, $_POST['name']);
     $description = mysqli_real_escape_string($conn, $_POST['description']);
     $price       = floatval($_POST['price']);
-    $category_id = intval($_POST['category_id']);
+    // $category_id = intval($_POST['category_id']);
 
     // Handle image upload
     $image_name = $_FILES['image']['name'];
     $image_tmp  = $_FILES['image']['tmp_name'];
-    $image_path = "../assets/uploads/" . $image_name;
+    $image_path = "../assets/uploads/" . basename($image_name);
 
     if (move_uploaded_file($image_tmp, $image_path)) {
-        $sql = "INSERT INTO products (name, description, price, category_id, image)
-                VALUES ('$name', '$description', '$price', '$category_id', '$image_name')";
+        $sql = "INSERT INTO products (name, description, price, image)
+                VALUES ('$name', '$description', '$price', '$image_name')";
 
         if (mysqli_query($conn, $sql)) {
-            $success = "✅ Product added successfully.";
+            $success = "✅ Product added successfully!";
         } else {
             $error = "❌ Database error: " . mysqli_error($conn);
         }
@@ -39,42 +40,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add Product - Admin</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
-<h2>Add New Product 👓</h2>
+<div class="container mt-5">
+    <h2 class="mb-4">👓 Add New Product</h2>
 
-<?php if ($success): ?>
-    <p style="color: green;"><?php echo $success; ?></p>
-<?php elseif ($error): ?>
-    <p style="color: red;"><?php echo $error; ?></p>
-<?php endif; ?>
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?php echo $success; ?></div>
+    <?php elseif ($error): ?>
+        <div class="alert alert-danger"><?php echo $error; ?></div>
+    <?php endif; ?>
 
-<form method="POST" enctype="multipart/form-data">
-    <label>Product Name:</label><br>
-    <input type="text" name="name" required><br><br>
+    <form method="POST" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
+        <div class="mb-3">
+            <label class="form-label">Product Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
 
-    <label>Description:</label><br>
-    <textarea name="description" required></textarea><br><br>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" required></textarea>
+        </div>
 
-    <label>Price (Rs):</label><br>
-    <input type="number" step="0.01" name="price" required><br><br>
+        <div class="mb-3">
+            <label class="form-label">Price (Rs)</label>
+            <input type="number" step="0.01" name="price" class="form-control" required>
+        </div>
 
-    <label>Category ID:</label><br>
-    <input type="number" name="category_id" required><br><br>
+        <!-- <div class="mb-3"> -->
+            <!-- <label class="form-label">Category</label> -->
+            <!-- <select name="category_id" class="form-select" required> -->
+                <!-- <option value="">-- Select Category --</option> -->
+                
+            <!-- </select> -->
+        <!-- </div> -->
 
-    <label>Upload Image:</label><br>
-    <input type="file" name="image" accept="image/*" required><br><br>
+        <div class="mb-3">
+            <label class="form-label">Upload Image</label>
+            <input type="file" name="image" accept="image/*" class="form-control" required>
+        </div>
 
-    <input type="submit" value="Add Product">
-</form>
-
-<br>
-<a href="dashboard.php">← Back to Dashboard</a>
+        <button type="submit" class="btn btn-primary">Add Product</button>
+        <a href="dashboard.php" class="btn btn-secondary ms-2">Back to Dashboard</a>
+    </form>
+</div>
 
 </body>
 </html>

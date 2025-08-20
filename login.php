@@ -1,7 +1,8 @@
 <?php
 include 'includes/db.php';
 include 'includes/header.php';
-session_start();
+
+session_start(); // Make sure this is at the top if not in header.php
 
 $error = "";
 
@@ -17,10 +18,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($result && mysqli_num_rows($result) === 1) {
             $user = mysqli_fetch_assoc($result);
-            if (password_verify($password,$user['password'])) {
+
+            if (password_verify($password, $user['password'])) {
+                // Store session values
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
-                header("Location: index.php");
+                $_SESSION['user_role'] = $user['role']; // 👈 Store role here
+
+                // Redirect based on role
+                if ($user['role'] === 'admin') {
+                    header("Location: admin/dashboard.php");
+                } else {
+                    header("Location: index.php");
+                }
                 exit();
             } else {
                 $error = "Incorrect password.";
@@ -119,3 +129,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+      
