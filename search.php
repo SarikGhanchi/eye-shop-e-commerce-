@@ -1,4 +1,7 @@
-<?php include 'includes/header.php'; ?>
+<?php 
+
+session_start();
+include 'includes/header.php'; ?>
 
 <h2 class="mb-4">🔍 Live Product Search</h2>
 

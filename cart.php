@@ -70,7 +70,15 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id']))
       </tr>
     </tfoot>
   </table>
-  <a href="checkout.php" class="btn btn-primary">Proceed to Checkout</a>
+  <!-- <a href="checkout.php" class="btn btn-primary">Proceed to Checkout</a> -->
+  <div class="d-flex justify-content-between mt-3">
+  <a href="index.php" class="btn btn-outline-secondary">
+    🛒 Add More Items
+  </a>
+  <a href="checkout.php" class="btn btn-success">
+    ✅ Proceed to Checkout
+  </a>
+</div>
 <?php endif; ?>
 
 <?php include 'includes/footer.php'; ?>

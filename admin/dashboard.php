@@ -20,7 +20,7 @@ $order_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total 
 
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Eye Shop</title>
+    <title>Admin Dashboard - Eye Zone</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap 5 -->
@@ -60,7 +60,7 @@ $order_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">👓 Eye Shop Admin</a>
+            <a class="navbar-brand" href="#">👓 Eye Zone Admin</a>
             <div class="d-flex">
                 <a href="logout.php" class="btn btn-outline-light">Logout</a>
             </div>

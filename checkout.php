@@ -4,7 +4,11 @@ include 'includes/db.php';
 include 'includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
-    echo "<p>You must <a href='login.php'>login</a> to place an order.</p>";
+    echo "<div class='container mt-5'>
+            <div class='alert alert-warning text-center'>
+                You must <a href='login.php' class='alert-link'>login</a> to place an order.
+            </div>
+          </div>";
     include 'includes/footer.php';
     exit();
 }
@@ -12,7 +16,11 @@ if (!isset($_SESSION['user_id'])) {
 $cart = $_SESSION['cart'] ?? [];
 
 if (empty($cart)) {
-    echo "<p>Your cart is empty. <a href='index.php'>Shop now</a></p>";
+    echo "<div class='container mt-5'>
+            <div class='alert alert-info text-center'>
+                Your cart is empty. <a href='index.php' class='alert-link'>Shop Now</a>
+            </div>
+          </div>";
     include 'includes/footer.php';
     exit();
 }
@@ -49,43 +57,76 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         unset($_SESSION['cart']);
-        echo "<p style='color:green;'>✅ Order placed successfully!</p>";
-        echo "<p><a href='index.php'>Continue Shopping</a></p>";
+        echo "<div class='container mt-5'>
+                <div class='alert alert-success text-center'>
+                    ✅ Order placed successfully! <br>
+                    <a href='index.php' class='btn btn-sm btn-success mt-3'>Continue Shopping</a>
+                </div>
+              </div>";
         include 'includes/footer.php';
         exit();
     } else {
-        echo "<p style='color:red;'>❌ Failed to place order. Try again.</p>";
+        echo "<div class='container mt-5'>
+                <div class='alert alert-danger text-center'>
+                    ❌ Failed to place order. Try again.
+                </div>
+              </div>";
     }
 }
 ?>
 
-<h2>Checkout</h2>
+<!-- <style>
+    .sarik {
+        background-color: #764ba2;
+        border-color: rgba(118, 75, 162, 1);
+    }
+</style> -->
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Product</th>
-        <th>Price</th>
-        <th>Qty</th>
-        <th>Total</th>
-    </tr>
-    <?php foreach ($cart_products as $item): ?>
-    <tr>
-        <td><?php echo htmlspecialchars($item['name']); ?></td>
-        <td>Rs. <?php echo $item['price']; ?></td>
-        <td><?php echo $item['quantity']; ?></td>
-        <td>Rs. <?php echo $item['subtotal']; ?></td>
-    </tr>
-    <?php endforeach; ?>
-    <tr>
-        <td colspan="3"><strong>Grand Total</strong></td>
-        <td><strong>Rs. <?php echo $total; ?></strong></td>
-    </tr>
-</table>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-success text-white text-center">
+            <h3 class="mb-0 sarik ">Checkout</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($cart_products as $item): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($item['name']); ?></td>
+                            <td>₹<?php echo number_format($item['price'], 2); ?></td>
+                            <td><?php echo $item['quantity']; ?></td>
+                            <td>₹<?php echo number_format($item['subtotal'], 2); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Grand Total</strong></td>
+                            <td><strong>₹<?php echo number_format($total, 2); ?></strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
 
-<br>
-
-<form method="POST">
-    <input type="submit" value="✅ Confirm & Place Order">
-</form>
+            <form method="POST" class="text-center mt-4">
+                <button type="submit" class="btn btn-success btn-lg px-4">
+                    ✅ Confirm & Place Order
+                </button>
+                <a href="cart.php" class="btn btn-outline-secondary btn-lg px-4 ms-2">
+                    🛒 Back to Cart
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?php include 'includes/footer.php'; ?>

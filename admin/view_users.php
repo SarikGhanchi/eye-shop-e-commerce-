@@ -36,9 +36,11 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY id DESC");
       </tr>
     </thead>
     <tbody>
-      <?php while ($user = mysqli_fetch_assoc($result)): ?>
+      <?php
+      $i=1;
+       while ($user = mysqli_fetch_assoc($result)): ?>
         <tr>
-          <td><?php echo $user['id']; ?></td>
+          <td><?php echo $i++; ?></td>
           <td><?php echo htmlspecialchars($user['name']); ?></td>
           <td><?php echo htmlspecialchars($user['email']); ?></td>
           <td>

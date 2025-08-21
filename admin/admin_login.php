@@ -54,6 +54,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 
 <a href="../index.php">← Back to Home</a>
-
 </body>
 </html>
