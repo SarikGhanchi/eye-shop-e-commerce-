@@ -1,8 +1,12 @@
-</div> <!-- End container -->
+</div> <!-- End main-content -->
 
-<footer class="bg-light text-center mt-5 py-3 border-top">
-    <p>&copy; <?php echo date('Y'); ?> Eye Zone. All rights reserved.</p>
+<footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+        <span class="text-muted">&copy; <?php echo date('Y'); ?> Eye Zone. All Rights Reserved.</span>
+    </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/script.js"></script>
 </body>
 </html>

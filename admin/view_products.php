@@ -1,72 +1,54 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit();
-}
-
+include 'partials/header.php';
 include '../includes/db.php';
 
 // Fetch all products
-$result = mysqli_query($conn, "SELECT * FROM products ");
+$stmt = $conn->prepare("SELECT * FROM products");
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
-<!DOCTYPE html>
-<html>
+<h1 class="section-title-admin">All Products</h1>
 
-<head>
-    <style>
-        .hover-shadow:hover {
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            transform: scale(1.02);
-            transition: 0.2s;
-        }
-    </style>
+<div class="d-flex justify-content-end mb-3">
+    <a href="add_product.php" class="btn btn-admin-primary"><i class="bi bi-plus-circle me-2"></i>Add New Product</a>
+</div>
 
-    <title>All Products - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-light">
-    <div class="container mt-5">
-        <h2>📦 All Products</h2>
-        <a href="dashboard.php" class="btn btn-secondary btn-sm mb-3">← Back to Dashboard</a>
-
-        <table class="table table-bordered table-hover bg-white shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price (Rs)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $index = 1;
-
-                while ($product = mysqli_fetch_assoc($result)): ?>
-                    <tr>
-                        <td><?php echo $index++; ?></td>
-                        <td><img src="../assets/uploads/<?php echo $product['image']; ?>" width="60"></td>
-                        <td><?php echo htmlspecialchars($product['name']); ?></td>
-                        <td><?php echo htmlspecialchars($product['category']); ?></td>
-                        <td><?php echo $product['price']; ?></td>
-                        <td>
-                            <a href="product_details.php?id=<?php echo $product['id']; ?>"
-                                class="btn btn-info btn-sm">View</a>
-                            <a href="edit_product.php?id=<?php echo $product['id']; ?>"
-                                class="btn btn-warning btn-sm">Edit</a>
-                            <a href="delete_product.php?id=<?php echo $product['id']; ?>" class="btn btn-danger btn-sm"
-                                onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+<div class="card card-admin shadow mb-4">
+    <div class="card-header-admin py-3">
+        <h6 class="m-0 fw-bold">Product List</h6>
     </div>
-</body>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-admin" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($product = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo $product['id']; ?></td>
+                            <td><img src="../assets/uploads/<?php echo htmlspecialchars($product['image']); ?>" width="60" class="rounded"></td>
+                            <td><?php echo htmlspecialchars($product['name']); ?></td>
+                            <td><?php echo htmlspecialchars($product['category']); ?></td>
+                            <td>$<?php echo number_format($product['price'], 2); ?></td>
+                            <td>
+                                <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                                <a href="delete_product.php?id=<?php echo $product['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this product?');"><i class="bi bi-trash-fill"></i></a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-</html>
+<?php include 'partials/footer.php'; ?>

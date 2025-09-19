@@ -1,0 +1,115 @@
+/* Admin Panel Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+    --admin-primary-color: #4e73df;
+    --admin-secondary-color: #858796;
+    --admin-bg-color: #f8f9fc;
+    --admin-sidebar-color: #343a40;
+    --admin-text-color: #333;
+    --font-family: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--admin-bg-color);
+    color: var(--admin-text-color);
+    display: flex;
+    min-height: 100vh;
+}
+
+#wrapper {
+    display: flex;
+    width: 100%;
+}
+
+#sidebar-wrapper {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: var(--admin-sidebar-color);
+    color: white;
+    transition: all 0.3s;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 1.5rem 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    color: white;
+}
+
+#sidebar-wrapper .list-group {
+    width: 100%;
+}
+
+#sidebar-wrapper .list-group-item {
+    background-color: var(--admin-sidebar-color);
+    color: rgba(255, 255, 255, 0.8);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #495057;
+    color: white;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background-color: var(--admin-primary-color);
+    color: white;
+}
+
+#page-content-wrapper {
+    width: 100%;
+    padding: 20px;
+}
+
+.navbar-admin {
+    background-color: #fff;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    padding: 1rem;
+}
+
+.section-title-admin {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--admin-text-color);
+}
+
+.card-admin {
+    border: none;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-header-admin {
+    background-color: var(--admin-primary-color);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    border-top-left-radius: 0.35rem;
+    border-top-right-radius: 0.35rem;
+}
+
+.btn-admin-primary {
+    background-color: var(--admin-primary-color);
+    border-color: var(--admin-primary-color);
+}
+
+.btn-admin-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.table-admin thead th {
+    background-color: var(--admin-primary-color);
+    color: white;
+    border-color: #4e73df;
+}
+
+.form-control-admin {
+    border-radius: 0.35rem;
+}

@@ -1,135 +1,97 @@
 <?php
-// Include database connection
-include '../includes/db.php'; // adjust path if needed
+include 'partials/header.php';
+include '../includes/db.php';
 
-// Fetch orders with user info
-$sql = "SELECT o.id, u.name AS customer_name, o.total, o.status 
-FROM orders o
-JOIN users u ON o.user_id = u.id
-ORDER BY o.id ASC";
-
-$result = mysqli_query($conn, $sql);
+$sql = "SELECT o.id, u.name AS customer_name, o.total, o.status, o.created_at FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.id DESC";
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>View Orders</title>
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<h1 class="section-title-admin">All Orders</h1>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-         th {
-            background-color: #010913ff;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .status {
-            font-weight: bold;
-        }
-        .status.pending {
-            color: orange;
-        }
-        .status.completed {
-            color: green;
-        }
-        .status.cancelled {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-
-<h1>Order List</h1>
-
-  <a href="dashboard.php" class="btn btn-secondary btn-sm mb-3">← Back to Dashboard</a>
-
-<?php if (mysqli_num_rows($result) > 0): ?>
-    <table border="1" cellpadding="10">
-    <tr>
-        <th>Order ID</th>
-        <th>Customer</th>
-        <th>Total</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-    <?php while($row = mysqli_fetch_assoc($result)): ?>
-        <tr>
-            <td><?= htmlspecialchars($row['id']) ?></td>
-            <td><?= htmlspecialchars($row['customer_name']) ?></td>
-            <td>₹<?= htmlspecialchars($row['total']) ?></td>
-            <td class="status <?= strtolower($row['status']) ?>">
-                <?= htmlspecialchars($row['status']) ?>
-            </td>
-            <td>
-                <button onclick="openModal('<?= $row['id'] ?>','<?= $row['status'] ?>')">Edit</button>
-            </td>
-        </tr>
-    <?php endwhile; ?>
-</table>
-
-
-<!-- ===== Modal Window ===== -->
-<div id="statusModal" class="modal" style="display:none;
-        position:fixed;top:0;left:0;width:100%;height:100%;
-        background:rgba(0,0,0,0.5);justify-content:center;align-items:center;">
-    
-    <div style="background:#fff;padding:20px;border-radius:10px;min-width:300px;position:relative;">
-        <h3>Change Order Status</h3>
-        
-        <form id="statusForm" method="POST" action="update_status.php">
-            <input type="hidden" name="order_id" id="modalOrderId">
-            
-            <label for="newStatus">Select Status:</label>
-            <select name="new_status" id="modalStatus">
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-            </select>
-            
-            <br><br>
-            <button type="submit">Save</button>
-            <button type="button" onclick="closeModal()">Cancel</button>
-        </form>
+<div class="card card-admin shadow mb-4">
+    <div class="card-header-admin py-3">
+        <h6 class="m-0 fw-bold">Order List</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-admin" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td>#<?php echo htmlspecialchars($row['id']); ?></td>
+                            <td><?php echo htmlspecialchars($row['customer_name']); ?></td>
+                            <td>$<?php echo number_format($row['total'], 2); ?></td>
+                            <td><span class="badge bg-<?php echo strtolower($row['status']) == 'delivered' ? 'success' : (strtolower($row['status']) == 'pending' ? 'warning' : 'info'); ?>"><?php echo htmlspecialchars($row['status']); ?></span></td>
+                            <td><?php echo date("d M, Y", strtotime($row['created_at'])); ?></td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal" data-order-id="<?php echo $row['id']; ?>" data-order-status="<?php echo $row['status']; ?>">
+                                    <i class="bi bi-pencil-square"></i> Update Status
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
+<!-- Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Update Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="update_status.php" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="order_id" id="modalOrderId">
+                    <div class="mb-3">
+                        <label for="modalStatus" class="form-label">Status</label>
+                        <select name="new_status" id="modalStatus" class="form-select form-control-admin">
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script>
-function openModal(orderId, currentStatus) {
-    document.getElementById("modalOrderId").value = orderId;
-    document.getElementById("modalStatus").value = currentStatus;
-    document.getElementById("statusModal").style.display = "flex";
-}
+    const statusModal = document.getElementById('statusModal');
+    statusModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const orderId = button.getAttribute('data-order-id');
+        const orderStatus = button.getAttribute('data-order-status');
+        
+        const modalOrderId = statusModal.querySelector('#modalOrderId');
+        const modalStatus = statusModal.querySelector('#modalStatus');
 
-function closeModal() {
-    document.getElementById("statusModal").style.display = "none";
-}
+        modalOrderId.value = orderId;
+        modalStatus.value = orderStatus;
+    });
 </script>
 
-<?php else: ?>
-    <p>No orders found.</p>
-<?php endif; ?>
-
-<?php mysqli_close($conn); ?>
-
-</body>
-</html>
+<?php include 'partials/footer.php'; ?>

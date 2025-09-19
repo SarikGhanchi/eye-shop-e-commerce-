@@ -1,12 +1,20 @@
-<div class="col-md-2 bg-light vh-100 p-3">
-  <h5>Menu</h5>
-  <ul class="nav flex-column">
-    <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="manage_slider.php" class="nav-link">Manage Slider</a></li>
-    <li class="nav-item"><a href="manage_donors.php" class="nav-link">Manage Donors</a></li>
-    <li class="nav-item"><a href="manage_stock.php" class="nav-link">Manage Blood Stock</a></li>
-    <li class="nav-item"><a href="manage_events.php" class="nav-link">Manage Events</a></li>
-    <li class="nav-item"><a href="view_requests.php" class="nav-link">View Requests</a></li>
-    <li class="nav-item"><a href="notices.php" class="nav-link">Notices</a></li>
-  </ul>
+<div id="sidebar-wrapper">
+    <div class="sidebar-heading">Eye Zone Admin</div>
+    <div class="list-group list-group-flush">
+        <a href="dashboard.php" class="list-group-item list-group-item-action bg-dark text-light">
+            <i class="bi bi-grid-fill me-2"></i> Dashboard
+        </a>
+        <a href="view_products.php" class="list-group-item list-group-item-action bg-dark text-light">
+            <i class="bi bi-eyeglasses me-2"></i> Products
+        </a>
+        <a href="view_orders.php" class="list-group-item list-group-item-action bg-dark text-light">
+            <i class="bi bi-receipt me-2"></i> Orders
+        </a>
+        <a href="view_users.php" class="list-group-item list-group-item-action bg-dark text-light">
+            <i class="bi bi-people-fill me-2"></i> Users
+        </a>
+        <a href="../logout.php" class="list-group-item list-group-item-action bg-dark text-light">
+            <i class="bi bi-box-arrow-right me-2"></i> Logout
+        </a>
+    </div>
 </div>

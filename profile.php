@@ -1,135 +1,113 @@
 <?php
-// Include database connection
+session_start();
 include 'includes/db.php';
 include 'includes/header.php';
 
-session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
 $user_id = $_SESSION['user_id'];
+$error = $success = "";
 
-// Prepare statement
-$query = $conn->prepare("SELECT * FROM users WHERE id = ?");
-$query->bind_param("i", $user_id);
-$query->execute();
+// Handle profile update
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']); // Added address field
 
-// Fetch result
-$result = $query->get_result();
+    // Basic validation
+    if (empty($name) || empty($email) || empty($phone) || empty($address)) {
+        $error = "All fields are required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Invalid email format.";
+    } else {
+        $stmt = $conn->prepare("UPDATE users SET name=?, email=?, phone=?, address=? WHERE id=?");
+        $stmt->bind_param("ssssi", $name, $email, $phone, $address, $user_id);
+
+        if ($stmt->execute()) {
+            $success = "Profile updated successfully!";
+            $_SESSION['user_name'] = $name; // Update session name if changed
+        } else {
+            $error = "Failed to update profile: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+}
+
+// Fetch user data
+$stmt = $conn->prepare("SELECT name, email, phone, address FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 $user = $result->fetch_assoc();
+$stmt->close();
+
+if (!$user) {
+    // Should not happen if user_id is valid, but good to handle
+    header("Location: logout.php");
+    exit();
+}
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Profile</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: #f8f9fa;
-    }
-    .card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0px 4px 20px rgba(0,0,0,0.08);
-    }
-    .card-header {
-     background-color: #764ba2;
-      border-color: rgba(118, 75, 162, 1);
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-        color: white;
-    }
-    .card-header h3 {
-      margin: 0;
-      font-weight: 600;
-    }
-    .list-group-item {
-      border: none;
-      padding: 14px 20px;
-      font-size: 16px;
-    }
-    .list-group-item strong {
-      color: #343a40;
-    }
-    .modal-content {
-      border-radius: 12px;
-    }
-    .btn-primary, .btn-success {
-      border-radius: 8px;
-      padding: 8px 18px;
-    }
-    .sarik {
-      background-color: #764ba2;
-      border-color: rgba(118, 75, 162, 1);
-    }
-  </style>
-</head>
-<body>
-
 <div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-7">
-      <div class="card">
-        <div class="card-header text-center sarik">
-          <h3>👤 My Profile</h3>
-        </div>
-        <div class="card-body">
-          <?php if ($user): ?>
-            <ul class="list-group list-group-flush mb-3">
-              <li class="list-group-item d-flex justify-content-between">
-                <strong>Name:</strong> <span><?php echo htmlspecialchars($user['name']); ?></span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <strong>Email:</strong> <span><?php echo htmlspecialchars($user['email']); ?></span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <strong>Phone:</strong> <span><?php echo htmlspecialchars($user['phone']); ?></span>
-              </li>
-            </ul>
-            <div class="text-center">
-              <button class="btn btn-primary sarik" data-bs-toggle="modal" data-bs-target="#editModal">✏️ Edit Profile</button>
+    <h2 class="section-title">My Profile</h2>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <i class="bi bi-person-circle display-1 text-primary mb-3"></i>
+                    <h4 class="card-title"><?php echo htmlspecialchars($user['name']); ?></h4>
+                    <p class="text-muted mb-0"><?php echo htmlspecialchars($user['email']); ?></p>
+                    <p class="text-muted"><?php echo htmlspecialchars($user['phone']); ?></p>
+                </div>
             </div>
-          <?php else: ?>
-            <p class="text-center text-danger">⚠️ Profile not found.</p>
-          <?php endif; ?>
         </div>
-      </div>
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0">Edit Profile Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <?php if ($success): ?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <?php echo $success; ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <?php echo $error; ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required><?php echo htmlspecialchars($user['address']); ?></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- Edit Profile Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form action="editprofile.php" method="POST">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Edit Profile</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
-          <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($user['name']); ?>" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Phone</label>
-            <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($user['phone']); ?>">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">💾 Save Changes</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php include 'includes/footer.php'; ?>

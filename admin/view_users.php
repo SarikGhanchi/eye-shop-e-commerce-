@@ -1,61 +1,51 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit();
-}
-
+include 'partials/header.php';
 include '../includes/db.php';
 
 // Fetch all users
-$result = mysqli_query($conn, "SELECT * FROM users ORDER BY id DESC");
+$stmt = $conn->prepare("SELECT id, name, email, role, created_at FROM users ORDER BY id DESC");
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>All Users - Admin</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<h1 class="section-title-admin">All Users</h1>
 
-<div class="container mt-5">
-  <h2 class="mb-4">👤 All Users</h2>
-  <a href="dashboard.php" class="btn btn-secondary btn-sm mb-3">← Back to Dashboard</a>
-
-  <table class="table table-bordered table-hover bg-white shadow-sm">
-    <thead class="table-dark">
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Registered At</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php
-      $i=1;
-       while ($user = mysqli_fetch_assoc($result)): ?>
-        <tr>
-          <td><?php echo $i++; ?></td>
-          <td><?php echo htmlspecialchars($user['name']); ?></td>
-          <td><?php echo htmlspecialchars($user['email']); ?></td>
-          <td>
-            <?php if ($user['role'] === 'admin'): ?>
-              <span class="badge bg-danger">Admin</span>
-            <?php else: ?>
-              <span class="badge bg-secondary">User</span>
-            <?php endif; ?>
-          </td>
-          <td><?php echo $user['created_at']; ?></td>
-        </tr>
-      <?php endwhile; ?>
-    </tbody>
-  </table>
+<div class="card card-admin shadow mb-4">
+    <div class="card-header-admin py-3">
+        <h6 class="m-0 fw-bold">User List</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-admin" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Registered At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($user = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo $user['id']; ?></td>
+                            <td><?php echo htmlspecialchars($user['name']); ?></td>
+                            <td><?php echo htmlspecialchars($user['email']); ?></td>
+                            <td>
+                                <?php if ($user['role'] === 'admin'): ?>
+                                    <span class="badge bg-danger">Admin</span>
+                                <?php else: ?>
+                                    <span class="badge bg-secondary">User</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo date("d M, Y", strtotime($user['created_at'])); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<?php include 'partials/footer.php'; ?>
